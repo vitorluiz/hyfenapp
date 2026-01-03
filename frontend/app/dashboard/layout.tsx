@@ -1,7 +1,8 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 // Componentes de ícones SVG
 const ChartIcon = () => (
@@ -47,6 +48,29 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter(); // Adicionar useRouter
+    const [user, setUser] = useState<{ full_name: string; initials: string } | null>(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+
+            try {
+                const res = await fetch('http://localhost:8000/api/v1/auth/me/', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    setUser(data);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar perfil:", error);
+            }
+        };
+        fetchUser();
+    }, []);
 
     const menuItems = [
         { label: 'Visão Geral', href: '/dashboard', icon: <ChartIcon /> },
@@ -59,7 +83,7 @@ export default function DashboardLayout({
     return (
         <div className="flex min-h-screen bg-background text-foreground font-sans">
             {/* Sidebar */}
-            <aside className="w-64 bg-card border-r border-white/5 flex flex-col fixed h-full">
+            <aside className="w-64 bg-card border-r border-white/5 flex flex-col fixed h-full z-10 transition-transform md:translate-x-0 -translate-x-full">
                 <div className="p-8">
                     <img src="/logo.svg" alt="Hyfen" className="h-6" />
                 </div>
@@ -95,12 +119,16 @@ export default function DashboardLayout({
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 ml-64 p-8">
+            <main className="flex-1 md:ml-64 p-8">
                 <header className="flex justify-between items-center mb-8">
                     <h2 className="text-xl font-bold text-foreground">Painel do Proprietário</h2>
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm text-text-secondary">Olá, Proprietário</span>
-                        <div className="w-10 h-10 rounded-full bg-brand-gradient flex items-center justify-center text-white font-bold">P</div>
+                        <span className="text-sm text-text-secondary">
+                            Olá, <span className="text-foreground font-medium">{user?.full_name || 'Proprietário'}</span>
+                        </span>
+                        <div className="w-10 h-10 rounded-full bg-brand-gradient flex items-center justify-center text-white font-bold shadow-lg">
+                            {user?.initials || 'P'}
+                        </div>
                     </div>
                 </header>
 

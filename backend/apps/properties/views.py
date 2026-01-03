@@ -2,8 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework.exceptions import NotFound
-from .models import Property
+from .models import Property, Room
 from .serializers import PropertySerializer
+from apps.reservations.models import Reservation
+from django.utils import timezone
+from django.db.models import Sum, Q, Count
+from datetime import date
+import calendar
 
 class CurrentPropertyView(APIView):
     """
@@ -74,13 +79,64 @@ class OwnerDashboardStatsView(APIView):
                 if not current_property:
                     return Response({"error": "Tenant não possui propriedades configuradas."}, status=404)
 
-            # Mock Stats
+            # Calcular estatísticas reais
+            today = timezone.now().date()
+            
+            # 1. Total de quartos ativos da propriedade
+            total_rooms = Room.objects.filter(
+                room_type__property=current_property, 
+                is_active=True
+            ).count()
+            
+            # 2. Check-ins Hoje (Status confirmado ou pendente e data checkin = hoje)
+            checkins_today = Reservation.objects.filter(
+                property=current_property,
+                check_in=today,
+                status__in=['confirmed', 'pending']
+            ).count()
+            
+            # 3. Check-outs Hoje (Status checked_in e data checkout = hoje)
+            checkouts_today = Reservation.objects.filter(
+                property=current_property,
+                check_out=today,
+                status='checked_in'
+            ).count()
+            
+            # 4. Quartos ocupados hoje (Reservas ativas que englobam hoje)
+            # check_in <= today < check_out
+            occupied_rooms = Reservation.objects.filter(
+                property=current_property,
+                check_in__lte=today,
+                check_out__gt=today,
+                status__in=['checked_in', 'confirmed']
+            ).count()
+            
+            # Taxa de ocupação
+            if total_rooms > 0:
+                occupancy_rate = int((occupied_rooms / total_rooms) * 100)
+            else:
+                occupancy_rate = 0
+                
+            # 5. Receita do Mês (Reservas com check-in neste mês, não canceladas)
+            first_day_month = today.replace(day=1)
+            last_day_month = today.replace(day=calendar.monthrange(today.year, today.month)[1])
+            
+            revenue_month = Reservation.objects.filter(
+                property=current_property,
+                check_in__gte=first_day_month,
+                check_in__lte=last_day_month
+            ).exclude(
+                status__in=['cancelled', 'no_show']
+            ).aggregate(
+                total_revenue=Sum('total_price')
+            )['total_revenue'] or 0.00
+            
             stats = {
-                "occupancy_rate": 65, # %
-                "active_reservations": 12,
-                "checkins_today": 3,
-                "checkouts_today": 1,
-                "revenue_month": 12500.00,
+                "occupancy_rate": occupancy_rate,
+                "active_reservations": occupied_rooms,
+                "checkins_today": checkins_today,
+                "checkouts_today": checkouts_today,
+                "revenue_month": float(revenue_month),
                 "property_name": current_property.name
             }
             return Response(stats)

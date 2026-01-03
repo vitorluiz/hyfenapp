@@ -222,3 +222,34 @@ class PasswordResetConfirmView(APIView):
         return Response({
             'message': 'Senha redefinida com sucesso! Você já pode fazer login com sua nova senha.'
         }, status=status.HTTP_200_OK)
+
+
+class UserProfileView(APIView):
+    """
+    Retorna o perfil do usuário logado.
+    Endpoint: GET /api/v1/auth/me/
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        initials = ""
+        if user.first_name:
+            initials += user.first_name[0]
+        if user.last_name:
+            initials += user.last_name[0]
+        elif user.first_name and len(user.first_name) > 1:
+             initials += user.first_name[1]
+             
+        if not initials and user.username:
+            initials = user.username[:2]
+            
+        return Response({
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'full_name': f"{user.first_name} {user.last_name}".strip() or user.username,
+            'initials': initials.upper()
+        })
