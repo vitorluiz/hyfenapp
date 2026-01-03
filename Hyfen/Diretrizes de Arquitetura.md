@@ -36,3 +36,7 @@ Este documento estabelece as decisões arquitetônicas e os padrões técnicos p
 *   **Pull Requests (PRs):** Nenhuma alteração é mesclada na `main` diretamente. Todo o código deve passar por um processo de Pull Request e Code Review.
 *   **Merge:** Usaremos o método "Squash and Merge" para manter o histórico da `main` limpo e significativo.
 
+## 5. Estratégia de Ambientes (Desenvolvimento vs. Produção)
+
+*   **Ambiente de Desenvolvimento:** Para maximizar a produtividade e a simplicidade, utilizaremos um arquivo `docker-compose.yml` **unificado** na raiz do projeto. O objetivo é orquestrar todo o ecossistema (backend, frontend, banco de dados, etc.) com um único comando para o desenvolvimento local.
+*   **Ambiente de Produção:** O `docker-compose.yml` **não** será usado para produção. A implantação será feita através de um pipeline de CI/CD que tratará o frontend e o backend como serviços **separados e independentes**, implantando cada um na plataforma mais adequada para sua função (ex: Vercel/Netlify para o frontend, AWS/Google Cloud/Heroku para o backend).
