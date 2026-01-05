@@ -11,6 +11,8 @@ export default function NewPropertyPage() {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
+        cnpj: '',
+        legal_name: '',
         address: '',
         city: '',
         state: '',
@@ -19,6 +21,11 @@ export default function NewPropertyPage() {
         phone: '',
         email: '',
         website: '',
+        instagram: '',
+        facebook: '',
+        youtube: '',
+        tiktok: '',
+        whatsapp: '',
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -128,6 +135,43 @@ export default function NewPropertyPage() {
                                 className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                                 placeholder="Descreva sua propriedade..."
                             />
+                        </div>
+                    </div>
+
+                    {/* Informações Legais */}
+                    <div className="glass-strong p-6 rounded-lg space-y-4">
+                        <h2 className="text-xl font-semibold mb-4">Informações Legais</h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="cnpj" className="block text-sm font-medium mb-2">
+                                    CNPJ
+                                </label>
+                                <input
+                                    id="cnpj"
+                                    name="cnpj"
+                                    type="text"
+                                    value={formData.cnpj}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    placeholder="00.000.000/0000-00"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="legal_name" className="block text-sm font-medium mb-2">
+                                    Razão Social
+                                </label>
+                                <input
+                                    id="legal_name"
+                                    name="legal_name"
+                                    type="text"
+                                    value={formData.legal_name}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    placeholder="Nome da empresa"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -265,6 +309,88 @@ export default function NewPropertyPage() {
                                 className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                                 placeholder="https://www.propriedade.com"
                             />
+                        </div>
+                    </div>
+
+                    {/* Redes Sociais */}
+                    <div className="glass-strong p-6 rounded-lg space-y-4">
+                        <h2 className="text-xl font-semibold mb-4">Redes Sociais</h2>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="instagram" className="block text-sm font-medium mb-2">
+                                    Instagram
+                                </label>
+                                <input
+                                    id="instagram"
+                                    name="instagram"
+                                    type="text"
+                                    value={formData.instagram}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    placeholder="@suapousada"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="facebook" className="block text-sm font-medium mb-2">
+                                    Facebook
+                                </label>
+                                <input
+                                    id="facebook"
+                                    name="facebook"
+                                    type="text"
+                                    value={formData.facebook}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    placeholder="facebook.com/suapousada"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="youtube" className="block text-sm font-medium mb-2">
+                                    YouTube
+                                </label>
+                                <input
+                                    id="youtube"
+                                    name="youtube"
+                                    type="text"
+                                    value={formData.youtube}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    placeholder="youtube.com/@suapousada"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="tiktok" className="block text-sm font-medium mb-2">
+                                    TikTok
+                                </label>
+                                <input
+                                    id="tiktok"
+                                    name="tiktok"
+                                    type="text"
+                                    value={formData.tiktok}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    placeholder="@suapousada"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="whatsapp" className="block text-sm font-medium mb-2">
+                                    WhatsApp
+                                </label>
+                                <input
+                                    id="whatsapp"
+                                    name="whatsapp"
+                                    type="tel"
+                                    value={formData.whatsapp}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    placeholder="(00) 00000-0000"
+                                />
+                            </div>
                         </div>
                     </div>
 
