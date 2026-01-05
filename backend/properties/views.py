@@ -43,17 +43,16 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
 class PropertyPublicView(generics.RetrieveAPIView):
     """
-    View pública para visualização de propriedade.
+    Public view for property details (no authentication required).
     
-    Não requer autenticação.
-    Não expõe dados sensíveis do owner.
+    Lookup by slug for SEO-friendly URLs.
     """
-    permission_classes = [AllowAny]
     serializer_class = PropertyPublicSerializer
-    lookup_field = 'id'
+    permission_classes = []  # No authentication required
+    lookup_field = 'slug'
     
     def get_queryset(self):
-        """Retorna apenas propriedades ativas"""
+        """Return only active properties"""
         return Property.objects.filter(is_active=True).select_related('owner')
 
 

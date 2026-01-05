@@ -8,5 +8,5 @@ router.register(r'accommodations', AccommodationViewSet, basename='accommodation
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('public/properties/<uuid:id>/', PropertyPublicView.as_view(), name='property-public'),
+    path('public/properties/<slug:slug>/', PropertyPublicView.as_view(), name='property-public'),
 ]

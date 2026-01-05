@@ -65,6 +65,23 @@ class Property(models.Model):
     def __str__(self):
         return f"{self.name} - {self.city}/{self.state}"
     
+    def save(self, *args, **kwargs):
+        """Auto-generate slug from name if not provided"""
+        if not self.slug:
+            from django.utils.text import slugify
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            
+            # Ensure unique slug
+            while Property.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            self.slug = slug
+        
+        super().save(*args, **kwargs)
+    
     def soft_delete(self):
         """Soft delete the property and all its accommodations."""
         self.is_active = False
