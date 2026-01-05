@@ -13,6 +13,8 @@ export default function NewPropertyPage() {
         description: '',
         cnpj: '',
         legal_name: '',
+        slug: '',
+        custom_domain: '',
         address: '',
         city: '',
         state: '',
@@ -172,6 +174,59 @@ export default function NewPropertyPage() {
                                     placeholder="Nome da empresa"
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* URL da Landing Page */}
+                    <div className="glass-strong p-6 rounded-lg space-y-4">
+                        <h2 className="text-xl font-semibold mb-4">URL da Landing Page</h2>
+
+                        <div>
+                            <label htmlFor="slug" className="block text-sm font-medium mb-2">
+                                Slug (URL amigável)
+                            </label>
+                            <div className="space-y-2">
+                                <input
+                                    id="slug"
+                                    name="slug"
+                                    type="text"
+                                    value={formData.slug}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                    placeholder="Deixe vazio para gerar automaticamente"
+                                />
+                                <p className="text-xs text-text-muted">
+                                    {formData.slug ? (
+                                        <>
+                                            Sua landing page será: <span className="text-primary font-mono">/public/{formData.slug}</span>
+                                        </>
+                                    ) : formData.name ? (
+                                        <>
+                                            Se deixar vazio, será gerado: <span className="text-text-secondary font-mono">/public/{formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}</span>
+                                        </>
+                                    ) : (
+                                        'Digite o nome da propriedade para ver o preview'
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="custom_domain" className="block text-sm font-medium mb-2">
+                                Domínio Personalizado (opcional)
+                            </label>
+                            <input
+                                id="custom_domain"
+                                name="custom_domain"
+                                type="text"
+                                value={formData.custom_domain}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                placeholder="www.suapousada.com.br"
+                            />
+                            <p className="text-xs text-text-muted mt-2">
+                                Configure seu próprio domínio para a landing page (requer configuração DNS)
+                            </p>
                         </div>
                     </div>
 
