@@ -97,7 +97,7 @@ export default function DashboardPage() {
                         {sidebarOpen && <span className="font-medium">Dashboard</span>}
                     </Link>
 
-                    <Link href="/properties" className="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary hover:bg-surface hover:text-text-primary transition-colors">
+                    <Link href="/dashboard/properties" className="flex items-center gap-3 px-4 py-3 rounded-lg text-text-secondary hover:bg-surface hover:text-text-primary transition-colors">
                         <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             <path d="M9 22V12H15V22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -169,51 +169,67 @@ export default function DashboardPage() {
                 <main className="flex-1 p-8 overflow-auto">
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div className="glass p-6 rounded-lg">
+                        <div className="glass-strong p-6 rounded-lg hover:scale-[1.02] transition-transform">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-text-secondary text-sm font-medium">Propriedades</h3>
-                                <svg className="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
                             </div>
-                            <p className="text-3xl font-bold">{properties.length}</p>
-                            <p className="text-text-muted text-sm mt-1">
-                                {properties.length === 0 ? 'Nenhuma propriedade cadastrada' : `${properties.length} ${properties.length === 1 ? 'propriedade' : 'propriedades'}`}
+                            <p className="text-4xl font-bold gradient-text mb-2">{properties.length}</p>
+                            <p className="text-text-muted text-sm mb-4">
+                                {properties.length === 0 ? 'Nenhuma cadastrada' : `${properties.length === 1 ? 'propriedade' : 'propriedades'}`}
                             </p>
+                            <div className="flex gap-2">
+                                <Link href="/dashboard/properties" className="flex-1 text-center py-2 px-3 rounded-lg glass hover:glass-strong transition-all text-xs font-medium">
+                                    Ver Todas
+                                </Link>
+                                <Link href="/dashboard/properties/new" className="flex-1 text-center py-2 px-3 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all text-xs font-medium">
+                                    + Nova
+                                </Link>
+                            </div>
                         </div>
 
-                        <div className="glass p-6 rounded-lg">
+                        <div className="glass-strong p-6 rounded-lg hover:scale-[1.02] transition-transform">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-text-secondary text-sm font-medium">Acomodações</h3>
-                                <svg className="w-8 h-8 text-secondary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V7M3 7C3 5.89543 3.89543 5 5 5H19C20.1046 5 21 5.89543 21 7M3 7H21M9 12H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-secondary" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V7M3 7C3 5.89543 3.89543 5 5 5H19C20.1046 5 21 5.89543 21 7M3 7H21M9 12H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
                             </div>
-                            <p className="text-3xl font-bold">{Array.isArray(properties) ? properties.reduce((sum, p) => sum + p.accommodations_count, 0) : 0}</p>
-                            <p className="text-text-muted text-sm mt-1">Total de acomodações</p>
+                            <p className="text-4xl font-bold mb-2">{Array.isArray(properties) ? properties.reduce((sum, p) => sum + p.accommodations_count, 0) : 0}</p>
+                            <p className="text-text-muted text-sm">Total de acomodações</p>
                         </div>
 
-                        <div className="glass p-6 rounded-lg">
+                        <div className="glass-strong p-6 rounded-lg hover:scale-[1.02] transition-transform">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-text-secondary text-sm font-medium">Reservas Ativas</h3>
-                                <svg className="w-8 h-8 text-accent" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M16 2V6M8 2V6M3 10H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M16 2V6M8 2V6M3 10H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
                             </div>
-                            <p className="text-3xl font-bold">0</p>
-                            <p className="text-text-muted text-sm mt-1">Nenhuma reserva ativa</p>
+                            <p className="text-4xl font-bold mb-2">0</p>
+                            <p className="text-text-muted text-sm">Em breve</p>
                         </div>
 
-                        <div className="glass p-6 rounded-lg">
+                        <div className="glass-strong p-6 rounded-lg hover:scale-[1.02] transition-transform">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-text-secondary text-sm font-medium">Receita Mensal</h3>
-                                <svg className="w-8 h-8 text-success" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-success" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
                             </div>
-                            <p className="text-3xl font-bold">R$ 0,00</p>
-                            <p className="text-text-muted text-sm mt-1">Nenhuma receita registrada</p>
+                            <p className="text-4xl font-bold mb-2">R$ 0</p>
+                            <p className="text-text-muted text-sm">Em breve</p>
                         </div>
                     </div>
 
