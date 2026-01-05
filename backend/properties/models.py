@@ -22,6 +22,14 @@ class Property(models.Model):
     name = models.CharField(max_length=200, verbose_name="Nome")
     description = models.TextField(blank=True, verbose_name="Descrição")
     
+    # Legal info
+    cnpj = models.CharField(max_length=18, blank=True, verbose_name="CNPJ")
+    legal_name = models.CharField(max_length=200, blank=True, verbose_name="Razão Social")
+    
+    # Public page
+    slug = models.SlugField(max_length=100, unique=True, blank=True, verbose_name="Slug (URL)")
+    custom_domain = models.CharField(max_length=200, blank=True, verbose_name="Domínio Personalizado")
+    
     # Address
     address = models.CharField(max_length=300, verbose_name="Endereço")
     city = models.CharField(max_length=100, verbose_name="Cidade")
@@ -33,6 +41,13 @@ class Property(models.Model):
     phone = models.CharField(max_length=20, blank=True, verbose_name="Telefone")
     email = models.EmailField(blank=True, verbose_name="Email")
     website = models.URLField(blank=True, verbose_name="Website")
+    
+    # Social Media
+    instagram = models.CharField(max_length=100, blank=True, verbose_name="Instagram")
+    facebook = models.CharField(max_length=100, blank=True, verbose_name="Facebook")
+    youtube = models.CharField(max_length=100, blank=True, verbose_name="YouTube")
+    tiktok = models.CharField(max_length=100, blank=True, verbose_name="TikTok")
+    whatsapp = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp")
     
     # Soft delete
     is_active = models.BooleanField(default=True, verbose_name="Ativo")
@@ -49,6 +64,23 @@ class Property(models.Model):
     
     def __str__(self):
         return f"{self.name} - {self.city}/{self.state}"
+    
+    def save(self, *args, **kwargs):
+        """Auto-generate slug from name if not provided"""
+        if not self.slug:
+            from django.utils.text import slugify
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            
+            # Ensure unique slug
+            while Property.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            
+            self.slug = slug
+        
+        super().save(*args, **kwargs)
     
     def soft_delete(self):
         """Soft delete the property and all its accommodations."""
