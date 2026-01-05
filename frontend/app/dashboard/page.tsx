@@ -50,7 +50,7 @@ export default function DashboardPage() {
             }
 
             const data = await response.json();
-            setProperties(data);
+            setProperties(data.results || data);
         } catch (err: any) {
             setError(err.message);
         } finally {
