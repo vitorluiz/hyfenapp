@@ -1,12 +1,21 @@
-from rest_framework import viewsets, generics, permissions
+from rest_framework import viewsets, generics, permissions, status, filters
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Property, Accommodation
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.db import models
+from django.db.models import Func
+from django.utils import timezone
+from django.db.models.functions import Lower
+from .models import Property, Accommodation, Image
 from .serializers import (
     PropertyListSerializer,
     PropertyDetailSerializer,
     PropertyCreateSerializer,
     PropertyPublicSerializer,
-    AccommodationSerializer
+    AccommodationListSerializer,
+    AccommodationDetailSerializer,
+    AccommodationCreateSerializer,
+    ImageSerializer
 )
 
 
@@ -14,7 +23,19 @@ class PropertyViewSet(viewsets.ModelViewSet):
     """
     ViewSet para CRUD de propriedades.
     
-    Apenas o owner pode ver e gerenciar suas propriedades.
+    Permite que proprietários gerenciem suas propriedades (pousadas, hotéis, casas de temporada).
+    
+    **Permissões:** Requer autenticação JWT.
+    
+    **Filtros:** Retorna apenas propriedades do usuário autenticado.
+    
+    **Operações:**
+    - `list`: Listar todas as propriedades do usuário
+    - `create`: Criar nova propriedade
+    - `retrieve`: Detalhes de uma propriedade específica
+    - `update`: Atualizar propriedade
+    - `partial_update`: Atualizar parcialmente
+    - `destroy`: Soft delete da propriedade
     """
     permission_classes = [IsAuthenticated]
     
@@ -26,11 +47,16 @@ class PropertyViewSet(viewsets.ModelViewSet):
         return PropertyDetailSerializer
     
     def get_queryset(self):
-        """Retorna apenas propriedades do usuário autenticado"""
+        """
+        Retorna apenas propriedades que o usuário tem acesso via PropertyAccess.
+        Filtra por registros de acesso (OWNER ou MANAGER).
+        """
+        user = self.request.user
+        
+        # Filtra propriedades onde o usuário tem registro em PropertyAccess
         return Property.objects.filter(
-            owner=self.request.user,
-            is_active=True
-        ).select_related('owner').prefetch_related('accommodations').order_by('-created_at')
+            accesses__user=user
+        ).distinct().prefetch_related('images')
     
     def perform_create(self, serializer):
         """Associa a propriedade ao usuário autenticado"""
@@ -41,11 +67,52 @@ class PropertyViewSet(viewsets.ModelViewSet):
         instance.soft_delete()
 
 
+
+class Unaccent(Func):
+    function = 'UNACCENT'
+
+class PropertyPublicListView(generics.ListAPIView):
+    """
+    Lista pública de todas as propriedades ativas no marketplace.
+    
+    **Permissões:** Nenhuma (Público)
+    
+    **Filtros:**
+    - `search`: Busca por nome ou cidade
+    """
+    serializer_class = PropertyPublicSerializer
+    permission_classes = [AllowAny]
+    # filter_backends = [filters.SearchFilter] # Removido para usar lógica customizada com Unaccent
+    # search_fields = ['name', 'city']
+    
+    def get_queryset(self):
+        queryset = Property.objects.filter(is_active=True).select_related('owner').prefetch_related('images').order_by('-created_at')
+        
+        search_term = self.request.query_params.get('search', None)
+        if search_term:
+            queryset = queryset.annotate(
+                name_unaccent=Unaccent(Lower('name')),
+                city_unaccent=Unaccent(Lower('city'))
+            ).filter(
+                models.Q(name_unaccent__icontains=Unaccent(Lower(models.Value(search_term)))) |
+                models.Q(city_unaccent__icontains=Unaccent(Lower(models.Value(search_term))))
+            )
+            
+        return queryset
+
+
 class PropertyPublicView(generics.RetrieveAPIView):
     """
-    Public view for property details (no authentication required).
+    Visualização pública de propriedade (sem autenticação).
     
-    Lookup by slug for SEO-friendly URLs.
+    Endpoint público para exibir informações da propriedade na landing page.
+    Não expõe dados sensíveis do proprietário.
+    
+    **Permissões:** Nenhuma (público)
+    
+    **Lookup:** Por slug (SEO-friendly)
+    
+    **Exemplo:** `/api/v1/public/properties/pousada-vista-linda/`
     """
     serializer_class = PropertyPublicSerializer
     permission_classes = []  # No authentication required
@@ -53,27 +120,108 @@ class PropertyPublicView(generics.RetrieveAPIView):
     
     def get_queryset(self):
         """Return only active properties"""
-        return Property.objects.filter(is_active=True).select_related('owner')
+        return Property.objects.filter(is_active=True).select_related('owner').prefetch_related('images')
 
 
 class AccommodationViewSet(viewsets.ModelViewSet):
     """
     ViewSet para CRUD de acomodações.
     
-    Apenas o owner da propriedade pode gerenciar.
+    Permite que proprietários gerenciem as acomodações (quartos, suítes, chalés)
+    dentro de suas propriedades.
+    
+    **Permissões:** Requer autenticação JWT.
+    
+    **Filtros:** Retorna apenas acomodações de propriedades do usuário.
+    
+    **Operações:**
+    - `list`: Listar todas as acomodações do usuário
+    - `create`: Criar nova acomodação
+    - `retrieve`: Detalhes de uma acomodação
+    - `update`: Atualizar acomodação
+    - `partial_update`: Atualizar parcialmente
+    - `destroy`: Soft delete da acomodação
     """
     permission_classes = [IsAuthenticated]
-    serializer_class = AccommodationSerializer
+    
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return AccommodationListSerializer
+        elif self.action == 'create':
+            return AccommodationCreateSerializer
+        return AccommodationDetailSerializer
     
     def get_queryset(self):
         """Retorna apenas acomodações das propriedades do usuário"""
         return Accommodation.objects.filter(
             property__owner=self.request.user,
             is_active=True
-        ).select_related('property').order_by('-created_at')
+        ).select_related('property').prefetch_related('images').order_by('-created_at')
     
     def perform_destroy(self, instance):
         """Soft delete da acomodação"""
         instance.is_active = False
         instance.deleted_at = timezone.now()
         instance.save()
+    
+    @action(detail=False, methods=['get'])
+    def by_property(self, request):
+        """Listar acomodações de uma propriedade específica"""
+        property_id = request.query_params.get('property_id')
+        if not property_id:
+            return Response(
+                {"error": "property_id é obrigatório"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        accommodations = self.get_queryset().filter(property_id=property_id)
+        serializer = self.get_serializer(accommodations, many=True)
+        return Response(serializer.data)
+
+
+class ImageViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gerenciar imagens.
+    
+    Permite upload e gerenciamento de imagens de propriedades e acomodações.
+    
+    **Permissões:** Requer autenticação JWT.
+    
+    **Filtros:** Retorna apenas imagens de propriedades/acomodações do usuário.
+    
+    **Operações:**
+    - `list`: Listar todas as imagens
+    - `create`: Upload de nova imagem
+    - `retrieve`: Detalhes de uma imagem
+    - `update`: Atualizar imagem (caption, order)
+    - `destroy`: Deletar imagem
+    - `reorder`: Reordenar múltiplas imagens
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = ImageSerializer
+    
+    def get_queryset(self):
+        """Filtrar apenas imagens de propriedades/acomodações do usuário"""
+        return Image.objects.filter(
+            models.Q(property__owner=self.request.user) |
+            models.Q(accommodation__property__owner=self.request.user)
+        ).select_related('property', 'accommodation').order_by('order', '-created_at')
+    
+    @action(detail=False, methods=['post'])
+    def reorder(self, request):
+        """
+        Reordenar imagens.
+        
+        **Body:** `{"image_ids": ["uuid1", "uuid2", "uuid3"]}`
+        """
+        image_ids = request.data.get('image_ids', [])
+        if not image_ids:
+            return Response(
+                {"error": "image_ids é obrigatório"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        for index, image_id in enumerate(image_ids):
+            Image.objects.filter(id=image_id).update(order=index)
+        
+        return Response({"status": "success", "message": f"{len(image_ids)} imagens reordenadas"})

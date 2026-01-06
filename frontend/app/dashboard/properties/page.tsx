@@ -7,6 +7,7 @@ import Link from 'next/link';
 interface Property {
     id: string;
     name: string;
+    slug: string;
     city: string;
     state: string;
     country: string;
@@ -40,13 +41,24 @@ export default function PropertiesPage() {
                 },
             });
 
+            if (response.status === 401) {
+                // Token expirado - redirecionar para login
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('user');
+                router.push('/login');
+                return;
+            }
+
             if (!response.ok) {
-                throw new Error('Erro ao carregar propriedades');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Erro ao carregar propriedades');
             }
 
             const data = await response.json();
             setProperties(data.results || data);
         } catch (err: any) {
+            console.error('Erro ao buscar propriedades:', err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -155,7 +167,7 @@ export default function PropertiesPage() {
                                             Ver Detalhes
                                         </Link>
                                         <Link
-                                            href={`/public/${property.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                                            href={`/public/${property.slug}`}
                                             target="_blank"
                                             className="flex-1 text-center py-2 px-4 rounded-lg glass hover:glass-strong transition-all text-sm font-medium flex items-center justify-center gap-1"
                                         >
