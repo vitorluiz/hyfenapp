@@ -379,11 +379,11 @@ export default function NewPropertyPage() {
                             <input
                                 id="website"
                                 name="website"
-                                type="text"
+                                type="url"
                                 value={formData.website}
                                 onChange={handleChange}
                                 className="w-full px-4 py-2.5 rounded-lg bg-surface border border-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                                placeholder="www.propriedade.com ou https://www.propriedade.com"
+                                placeholder="https://www.propriedade.com"
                             />
                         </div>
                     </div>
