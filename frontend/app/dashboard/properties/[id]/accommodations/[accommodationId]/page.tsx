@@ -19,6 +19,7 @@ interface Accommodation {
     property: string;
     images: any[];
     created_at: string;
+    is_active: boolean;
 }
 
 const ACCOMMODATION_TYPES: Record<string, string> = {
