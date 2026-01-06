@@ -7,6 +7,7 @@ import Link from 'next/link';
 interface Property {
     id: string;
     name: string;
+    slug: string;
     city: string;
     state: string;
     country: string;
@@ -155,7 +156,7 @@ export default function PropertiesPage() {
                                             Ver Detalhes
                                         </Link>
                                         <Link
-                                            href={`/public/${property.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                                            href={`/public/${property.slug}`}
                                             target="_blank"
                                             className="flex-1 text-center py-2 px-4 rounded-lg glass hover:glass-strong transition-all text-sm font-medium flex items-center justify-center gap-1"
                                         >
